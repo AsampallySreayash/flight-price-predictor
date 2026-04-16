@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+flight_model.pkl
+flight_predictor.db
