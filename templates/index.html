@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Flight Price Predictor - Home{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="text-align: center; margin: 4rem 0;">
+    <h1 style="color: white; font-size: 3rem; margin-bottom: 1rem; animation: fadeInUp 1s ease;">
+        ✈️ Flight Price Predictor
+    </h1>
+    <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.2rem; margin-bottom: 2rem; animation: fadeInUp 1s ease 0.3s both;">
+        Predict flight prices with AI-powered machine learning
+    </p>
+    <div style="animation: fadeInUp 1s ease 0.6s both;">
+        <a href="/register" class="btn" style="margin: 0 1rem;">Get Started</a>
+        <a href="/login" class="btn" style="margin: 0 1rem;">Login</a>
+    </div>
+</div>
+
+<div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 4rem 0;">
+    <div class="card pulse">
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+            <h3 style="color: white; margin-bottom: 1rem;">AI-Powered Predictions</h3>
+            <p style="color: rgba(255, 255, 255, 0.8);">
+                Advanced machine learning algorithms analyze historical data to predict flight prices with high accuracy.
+            </p>
+        </div>
+    </div>
+
+    <div class="card pulse" style="animation-delay: 0.2s;">
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚡</div>
+            <h3 style="color: white; margin-bottom: 1rem;">Real-time Analysis</h3>
+            <p style="color: rgba(255, 255, 255, 0.8);">
+                Get instant price predictions based on your travel dates, destinations, and preferences.
+            </p>
+        </div>
+    </div>
+
+    <div class="card pulse" style="animation-delay: 0.4s;">
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+            <h3 style="color: white; margin-bottom: 1rem;">Historical Tracking</h3>
+            <p style="color: rgba(255, 255, 255, 0.8);">
+                Track your search history and compare prices across different dates and airlines.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-section h1 {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.features-grid .card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+</style>
+{% endblock %}

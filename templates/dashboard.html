@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Flight Price Predictor{% endblock %}
+
+{% block content %}
+<div class="welcome-header" style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="color: white; font-size: 2.5rem; margin-bottom: 0.5rem; animation: fadeInDown 1s ease;">
+        Welcome back, {{ username }}! 🎉
+    </h1>
+    <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem; animation: fadeInUp 1s ease 0.3s both;">
+        Ready to predict your next flight price?
+    </p>
+</div>
+
+<div class="prediction-container">
+    <div class="card" style="animation: slideInUp 0.8s ease;">
+        <h2 style="color: white; text-align: center; margin-bottom: 2rem; font-size: 2rem;">
+            ✈️ Flight Price Predictor
+        </h2>
+        
+        <form id="predictionForm" class="prediction-form">
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label for="airline">Airline</label>
+                    <select id="airline" name="airline" required>
+                        <option value="">Select Airline</option>
+                        {% for airline in airlines %}
+                            <option value="{{ airline }}">{{ airline }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="stops">Number of Stops</label>
+                    <select id="stops" name="stops" required>
+                        <option value="">Select Stops</option>
+                        <option value="0">Non-Stop</option>
+                        <option value="1">1 Stop</option>
+                        <option value="2">2+ Stops</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label for="source">From</label>
+                    <select id="source" name="source" required>
+                        <option value="">Select Departure City</option>
+                        {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="destination">To</label>
+                    <select id="destination" name="destination" required>
+                        <option value="">Select Destination City</option>
+                        {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-group">
+                    <label for="travel_date">Travel Date</label>
+                    <input type="date" id="travel_date" name="travel_date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duration">Flight Duration (minutes)</label>
+                    <input type="number" id="duration" name="duration" placeholder="e.g., 120" min="30" max="600" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn predict-btn" style="width: 100%; font-size: 1.1rem; padding: 15px;">
+                🔮 Predict Price
+            </button>
+        </form>
+        
+        <div class="loading" id="loadingDiv">
+            <div class="spinner"></div>
+            <p>Analyzing flight data...</p>
+        </div>
+        
+        <div class="result-container" id="resultContainer" style="display: none; margin-top: 2rem;">
+            <div class="price-result" style="text-align: center; padding: 2rem; background: rgba(255, 255, 255, 0.1); border-radius: 15px; border: 2px solid rgba(255, 255, 255, 0.2);">
+                <h3 style="color: white; margin-bottom: 1rem;">Predicted Price</h3>
+                <div class="price-display" style="font-size: 3rem; font-weight: bold; color: #4ecdc4; margin-bottom: 1rem; animation: priceReveal 1s ease;">
+                    ₹<span id="predictedPrice">0</span>
+                </div>
+                <div class="price-details" style="color: rgba(255, 255, 255, 0.8);">
+                    <p id="priceMessage">Price prediction based on current market trends</p>
+                </div>
+                <button class="btn" onclick="searchAgain()" style="margin-top: 1rem;">
+                    Search Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="quick-stats" style="margin-top: 3rem;">
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div class="stat-card card" style="text-align: center; animation: fadeInLeft 1s ease;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
+            <h3 style="color: white; margin-bottom: 0.5rem;">AI Accuracy</h3>
+            <p style="color: #4ecdc4; font-size: 1.5rem; font-weight: bold;">94.5%</p>
+        </div>
+        
+        <div class="stat-card card" style="text-align: center; animation: fadeInUp 1s ease 0.2s both;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚡</div>
+            <h3 style="color: white; margin-bottom: 0.5rem;">Predictions Made</h3>
+            <p style="color: #4ecdc4; font-size: 1.5rem; font-weight: bold;" id="predictionsCount">1,250+</p>
+        </div>
+        
+        <div class="stat-card card" style="text-align: center; animation: fadeInRight 1s ease 0.4s both;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💰</div>
+            <h3 style="color: white; margin-bottom: 0.5rem;">Avg. Savings</h3>
+            <p style="color: #4ecdc4; font-size: 1.5rem; font-weight: bold;">₹2,450</p>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes priceReveal {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.predict-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.predict-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.predict-btn:hover:before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.form-group select option {
+    background: #333;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
+<script>
+// Set minimum date to today
+document.getElementById('travel_date').min = new Date().toISOString().split('T')[0];
+
+// Form submission
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    // Validation
+    if (data.source === data.destination) {
+        alert('Departure and destination cities cannot be the same!');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('loadingDiv').style.display = 'block';
+    document.getElementById('resultContainer').style.display = 'none';
+    this.style.display = 'none';
+    
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        setTimeout(() => {
+            document.getElementById('loadingDiv').style.display = 'none';
+            
+            if (result.error) {
+                alert('Error: ' + result.error);
+                this.style.display = 'block';
+            } else {
+                document.getElementById('predictedPrice').textContent = result.predicted_price;
+                document.getElementById('priceMessage').textContent = result.message;
+                document.getElementById('resultContainer').style.display = 'block';
+                
+                // Update predictions count
+                const currentCount = parseInt(document.getElementById('predictionsCount').textContent.replace(/[^\d]/g, ''));
+                document.getElementById('predictionsCount').textContent = (currentCount + 1).toLocaleString() + '+';
+            }
+        }, 2000); // Simulate processing time
+        
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loadingDiv').style.display = 'none';
+        this.style.display = 'block';
+        alert('An error occurred. Please try again.');
+    }
+});
+
+// Search again function
+function searchAgain() {
+    document.getElementById('resultContainer').style.display = 'none';
+    document.getElementById('predictionForm').style.display = 'block';
+    document.getElementById('predictionForm').reset();
+    document.getElementById('travel_date').min = new Date().toISOString().split('T')[0];
+}
+
+// Auto-fill duration based on route
+document.getElementById('source').addEventListener('change', updateDuration);
+document.getElementById('destination').addEventListener('change', updateDuration);
+
+function updateDuration() {
+    const source = document.getElementById('source').value;
+    const destination = document.getElementById('destination').value;
+    
+    if (source && destination && source !== destination) {
+        // Estimate duration based on cities (simplified)
+        const durations = {
+            'Delhi-Mumbai': 135,
+            'Delhi-Bangalore': 165,
+            'Delhi-Chennai': 175,
+            'Mumbai-Bangalore': 95,
+            'Mumbai-Chennai': 105,
+            'Bangalore-Chennai': 65
+        };
+        
+        const route = `${source}-${destination}`;
+        const reverseRoute = `${destination}-${source}`;
+        
+        const duration = durations[route] || durations[reverseRoute] || 120;
+        document.getElementById('duration').value = duration;
+    }
+}
+
+// Add smooth animations for form interactions
+document.querySelectorAll('select, input').forEach(element => {
+    element.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'scale(1.02)';
+        this.parentElement.style.transition = 'transform 0.2s ease';
+    });
+    
+    element.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'scale(1)';
+    });
+});
+
+// Animate stats on page load
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        document.querySelectorAll('.stat-card').forEach((card, index) => {
+            setTimeout(() => {
+                card.style.animation = `fadeInUp 0.8s ease ${index * 0.2}s both`;
+            }, index * 200);
+        });
+    }, 1000);
+});
+</script>
+{% endblock %}

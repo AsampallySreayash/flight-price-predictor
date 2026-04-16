@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Search History - Flight Price Predictor{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="card" style="margin-bottom: 2rem;">
+        <h1 style="color: white; text-align: center; margin-bottom: 1rem; font-size: 2.5rem;">
+            📊 Your Flight Search History
+        </h1>
+        <p style="color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 1.1rem;">
+            Track your previous searches and price predictions
+        </p>
+    </div>
+
+    {% if searches %}
+        <div class="history-stats card" style="margin-bottom: 2rem;">
+            <h3 style="color: white; margin-bottom: 1rem;">📈 Quick Stats</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">{{ searches|length }}</div>
+                    <div class="stat-label">Total Searches</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">₹{{ "%.0f"|format(searches|map(attribute=3)|sum / searches|length) }}</div>
+                    <div class="stat-label">Avg. Price</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">₹{{ searches|map(attribute=3)|min|int }}</div>
+                    <div class="stat-label">Lowest Price</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">₹{{ searches|map(attribute=3)|max|int }}</div>
+                    <div class="stat-label">Highest Price</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-list">
+            {% for search in searches %}
+            <div class="search-item card" style="animation: slideInLeft {{ loop.index * 0.1 }}s ease both;">
+                <div class="search-header">
+                    <div class="route-info">
+                        <div class="route">
+                            <span class="city">{{ search[0] }}</span>
+                            <span class="arrow">✈️</span>
+                            <span class="city">{{ search[1] }}</span>
+                        </div>
+                        <div class="travel-date">{{ search[2] }}</div>
+                    </div>
+                    <div class="price-info">
+                        <div class="predicted-price">₹{{ search[3]|int }}</div>
+                        <div class="price-label">Predicted Price</div>
+                    </div>
+                </div>
+                
+                <div class="search-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">📅</span>
+                        <span class="detail-text">Searched on: {{ search[4][:10] }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">⏰</span>
+                        <span class="detail-text">Time: {{ search[4][11:16] }}</span>
+                    </div>
+                </div>
+
+                <div class="price-indicator">
+                    {% set price = search[3]|int %}
+                    {% if price < 5000 %}
+                        <div class="price-badge good">💚 Great Deal</div>
+                    {% elif price < 8000 %}
+                        <div class="price-badge moderate">💛 Fair Price</div>
+                    {% else %}
+                        <div class="price-badge expensive">❤️ Premium</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="card" style="text-align: center; margin-top: 2rem;">
+            <button onclick="clearHistory()" class="btn" style="background: linear-gradient(45deg, #ff4757, #ff3838);">
+                🗑️ Clear History
+            </button>
+            <button onclick="exportHistory()" class="btn" style="margin-left: 1rem;">
+                📊 Export Data
+            </button>
+        </div>
+
+    {% else %}
+        <div class="empty-state card" style="text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">✈️</div>
+            <h3 style="color: white; margin-bottom: 1rem;">No Search History</h3>
+            <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+                Start searching for flights to see your prediction history here!
+            </p>
+            <a href="/dashboard" class="btn">Start Predicting</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.history-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4ecdc4;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.search-item {
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.search-item:before {
+    content: '';
+    position: absolute;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.search-item:hover:before {
+    left: 100%;
+}
+
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.route {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.2rem;
+}
+
+.city {
+    color: white;
+    font-weight: bold;
+}
+
+.arrow {
+    font-size: 1.5rem;
+    animation: fly 2s ease-in-out infinite;
+}
+
+@keyframes fly {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+.travel-date {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.price-info {
+    text-align: right;
+}
+
+.predicted-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4ecdc4;
+    text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+.price-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+}
+
+.search-details {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.detail-icon {
+    font-size: 1rem;
+}
+
+.price-indicator {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.price-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.price-badge.good {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 2px solid #4CAF50;
+}
+
+.price-badge.moderate {
+    background: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+    border: 2px solid #FFC107;
+}
+
+.price-badge.expensive {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 2px solid #f44336;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.empty-state {
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .search-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .price-info {
+        text-align: left;
+    }
+    
+    .search-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+
+<script>
+function clearHistory() {
+    if (confirm('Are you sure you want to clear all search history? This action cannot be undone.')) {
+        // In a real application, this would make an API call to delete history
+        fetch('/clear-history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to clear history. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+
+function exportHistory() {
+    // Create CSV data from the search history
+    const searches = [
+        {% for search in searches %}
+        {
+            departure: "{{ search[0] }}",
+            destination: "{{ search[1] }}",
+            travelDate: "{{ search[2] }}",
+            predictedPrice: {{ search[3] }},
+            searchDate: "{{ search[4] }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    if (searches.length === 0) {
+        alert('No data to export!');
+        return;
+    }
+    
+    // Create CSV content
+    let csvContent = "Departure,Destination,Travel Date,Predicted Price,Search Date\n";
+    searches.forEach(search => {
+        csvContent += `${search.departure},${search.destination},${search.travelDate},${search.predictedPrice},${search.searchDate}\n`;
+    });
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `flight_search_history_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    const successMsg = document.createElement('div');
+    successMsg.className = 'alert alert-success';
+    successMsg.innerHTML = '📊 History exported successfully!';
+    successMsg.style.position = 'fixed';
+    successMsg.style.top = '20px';
+    successMsg.style.right = '20px';
+    successMsg.style.zIndex = '9999';
+    document.body.appendChild(successMsg);
+    
+    setTimeout(() => {
+        document.body.removeChild(successMsg);
+    }, 3000);
+}
+
+// Add animation on scroll
+function animateOnScroll() {
+    const searchItems = document.querySelectorAll('.search-item');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    searchItems.forEach(item => {
+        observer.observe(item);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', animateOnScroll);
+
+// Add hover effect for better interactivity
+document.querySelectorAll('.search-item').forEach(item => {
+    item.addEventListener('mouseenter', function() {
+        this.style.background = 'rgba(255, 255, 255, 0.15)';
+    });
+    
+    item.addEventListener('mouseleave', function() {
+        this.style.background = 'rgba(255, 255, 255, 0.1)';
+    });
+});
+</script>
+{% endblock %}

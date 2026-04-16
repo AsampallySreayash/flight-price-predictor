@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Flight Price Predictor{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card" style="max-width: 400px; width: 100%;">
+        <h2 style="color: white; text-align: center; margin-bottom: 2rem; font-size: 2rem;">
+            🚀 Join FlightPredictor
+        </h2>
+        
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="alert alert-error">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        
+        <form method="POST" id="registerForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">
+                Create Account
+            </button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 1rem; color: rgba(255, 255, 255, 0.8);">
+            Already have an account? 
+            <a href="/login" style="color: #4ecdc4; text-decoration: none;">Login here</a>
+        </p>
+    </div>
+</div>
+
+<style>
+.card {
+    animation: slideInDown 0.8s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.form-group input:valid {
+    border-color: #4CAF50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.form-group input:invalid:not(:placeholder-shown) {
+    border-color: #f44336;
+    box-shadow: 0 0 10px rgba(244, 67, 54, 0.3);
+}
+</style>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        e.preventDefault();
+        alert('Password must be at least 6 characters long!');
+        return false;
+    }
+    
+    // Add loading animation
+    const button = e.target.querySelector('button[type="submit"]');
+    button.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; margin: 0 auto;"></div>';
+    button.disabled = true;
+});
+
+// Add real-time validation feedback
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    if (password.length >= 6) {
+        this.style.borderColor = '#4CAF50';
+    } else {
+        this.style.borderColor = '#f44336';
+    }
+    
+    if (confirmPassword.value && password !== confirmPassword.value) {
+        confirmPassword.style.borderColor = '#f44336';
+    } else if (confirmPassword.value) {
+        confirmPassword.style.borderColor = '#4CAF50';
+    }
+});
+
+document.getElementById('confirmPassword').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    
+    if (this.value === password && password.length >= 6) {
+        this.style.borderColor = '#4CAF50';
+    } else {
+        this.style.borderColor = '#f44336';
+    }
+});
+</script>
+{% endblock %}
