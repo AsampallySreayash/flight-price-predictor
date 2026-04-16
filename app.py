@@ -213,6 +213,12 @@ def predict():
         
         # Round to nearest 50
         predicted_price = round(predicted_price / 50) * 50
+        if predicted_price < 5000:
+            category = "Cheap 💚"
+        elif predicted_price < 8000:
+            category = "Moderate 💛"
+        else:
+            category = "Expensive ❤️"
         
         # Save search history
         conn = sqlite3.connect('flight_predictor.db')
@@ -227,6 +233,7 @@ def predict():
         
         return jsonify({
             'predicted_price': int(predicted_price),
+            'category': category,
             'message': 'Price predicted successfully!'
         })
         

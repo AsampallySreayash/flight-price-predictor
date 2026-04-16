@@ -238,7 +238,7 @@ document.getElementById('predictionForm').addEventListener('submit', async funct
                 this.style.display = 'block';
             } else {
                 document.getElementById('predictedPrice').textContent = result.predicted_price;
-                document.getElementById('priceMessage').textContent = result.message;
+                document.getElementById('priceMessage').textContent = result.message + " (" + result.category + ")";
                 document.getElementById('resultContainer').style.display = 'block';
                 
                 // Update predictions count
